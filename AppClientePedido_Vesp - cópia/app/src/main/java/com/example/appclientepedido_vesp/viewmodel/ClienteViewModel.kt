@@ -2,6 +2,7 @@ package com.example.appclientepedido_vesp.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appclientepedido_vesp.model.Cliente
 import com.example.appclientepedido_vesp.service.IService
 import com.example.appclientepedido_vesp.service.RetrofitAppApi
@@ -64,6 +65,37 @@ class ClienteViewModel: ViewModel() {
                 e.printStackTrace()
             }finally {
                 _clientes.value = _clientes.value.filter { it.idCliente != id }
+            }
+        }
+    }
+
+    fun buscarCliente(id:Int){
+        viewModelScope.launch {
+            try {
+                api.getClientePorId(id)
+            }catch (e: Exception) {
+                e.printStackTrace()
+            }finally {
+                if(id != 0)
+                    _clientes.value = _clientes.value.filter { it.idCliente == id }
+            }
+        }
+    }
+
+    fun alterarCliente(id:Int, idcliente: Int, nome:String, telefone:String){
+        viewModelScope.launch {
+            try {
+                val novoCliente = Cliente(idCliente = idcliente,nome=nome, telefone=telefone)
+                api.atualizarCliente(id, novoCliente)
+                _clientes.value = _clientes.value.map { cliente ->
+                    if (cliente.idCliente == id) {
+                        novoCliente
+                    } else {
+                        cliente
+                    }
+                }
+            }catch (e: Exception) {
+                e.printStackTrace()
             }
         }
     }

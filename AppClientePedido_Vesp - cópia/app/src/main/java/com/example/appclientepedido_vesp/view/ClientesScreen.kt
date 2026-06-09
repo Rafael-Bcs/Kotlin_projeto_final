@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -39,6 +40,8 @@ fun ClientesScreen(viewModel: ClienteViewModel = viewModel()) {
     val clientes by viewModel.clientes.collectAsState()
 
     var contador = clientes.size
+
+    var clienteEditando by remember { mutableStateOf<Int?>(null) }
 
 
     Column(
@@ -71,14 +74,38 @@ fun ClientesScreen(viewModel: ClienteViewModel = viewModel()) {
 
         Button(
             onClick = {
-                contador += 1
-                if(nomeInput.isNotBlank() && telefoneInput.isNotBlank()) {
-                    viewModel.adicionarCliente(contador,nomeInput,telefoneInput)
+                if (nomeInput.isNotBlank() && telefoneInput.isNotBlank()) {
+
+                    if (clienteEditando == null) {
+                        contador += 1
+                        viewModel.adicionarCliente(
+                            contador,
+                            nomeInput,
+                            telefoneInput
+                        )
+                    } else {
+
+                        viewModel.alterarCliente(
+                            id = clienteEditando!!,
+                            idcliente = clienteEditando!!,
+                            nome = nomeInput,
+                            telefone = telefoneInput
+                        )
+
+                        clienteEditando = null
+                    }
+
+                    nomeInput = ""
+                    telefoneInput = ""
                 }
             }
         ) {
-
-            Text("Adicionar Cliente")
+            Text(
+                if (clienteEditando == null)
+                    "Adicionar Cliente"
+                else
+                    "Salvar Alteração"
+            )
         }
 
         Spacer(modifier = Modifier.height(15.dp))
@@ -120,6 +147,21 @@ fun ClientesScreen(viewModel: ClienteViewModel = viewModel()) {
 
                                         contentDescription = "Excluir cliente"
                                     )
+                            }
+                            IconButton(
+                                onClick = {
+
+                                    clienteEditando = clientes.idCliente
+
+                                    nomeInput = clientes.nome
+                                    telefoneInput = clientes.telefone
+
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Editar cliente"
+                                )
                             }
                         }
                     }
